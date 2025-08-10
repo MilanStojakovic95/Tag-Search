@@ -1,4 +1,5 @@
 from PyQt6.QtWidgets import QMainWindow, QLabel
+from utils.file_utils import scan_videos
 
 class MainWindow(QMainWindow):
     def __init__(self):
