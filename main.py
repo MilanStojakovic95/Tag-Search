@@ -1,13 +1,16 @@
 import sys
-from pathlib import Path
+import os
 
-# Add 'src' folder to sys.path so Python can find your modules
-sys.path.append(str(Path(__file__).parent / "src"))
+# Ensure src is on the Python path
+sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
 
 from ui.main_window import MainWindow
+from core.database import init_db
 from PyQt6.QtWidgets import QApplication
 
 def main():
+    init_db()
+
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
