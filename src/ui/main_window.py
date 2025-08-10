@@ -1,6 +1,10 @@
-from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QPushButton, QFileDialog, QTextEdit
+from PyQt6.QtWidgets import (
+    QMainWindow, QVBoxLayout, QWidget,
+    QPushButton, QFileDialog, QTableWidget, QTableWidgetItem, QHeaderView
+)
 from utils.file_utils import scan_videos
-from core.database import insert_video
+from core.database import insert_video, get_all_videos
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -10,27 +14,39 @@ class MainWindow(QMainWindow):
 
         layout = QVBoxLayout()
 
+        # Scan button
         self.scan_button = QPushButton("Scan Folder")
         self.scan_button.clicked.connect(self.open_folder_dialog)
         layout.addWidget(self.scan_button)
 
-        self.result_box = QTextEdit()
-        self.result_box.setReadOnly(True)
-        layout.addWidget(self.result_box)
+        # Table for videos
+        self.video_table = QTableWidget()
+        self.video_table.setColumnCount(3)
+        self.video_table.setHorizontalHeaderLabels(["Name", "Path", "Extension"])
+        self.video_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.video_table.setSortingEnabled(True)
+        layout.addWidget(self.video_table)
 
         container = QWidget()
         container.setLayout(layout)
         self.setCentralWidget(container)
 
+        # Load existing DB videos at startup
+        self.load_videos()
+
     def open_folder_dialog(self):
         folder = QFileDialog.getExistingDirectory(self, "Select Folder to Scan")
         if folder:
             videos = scan_videos(folder)
-            self.result_box.clear()
-            if videos:
-                self.result_box.append(f"Found {len(videos)} video(s):\n")
-                for v in videos:
-                    insert_video(v)  # store in DB
-                    self.result_box.append(v)
-            else:
-                self.result_box.append("No videos found in the selected folder.")
+            for v in videos:
+                insert_video(v)
+            self.load_videos()
+
+    def load_videos(self):
+        self.video_table.setRowCount(0)
+        videos = get_all_videos()
+        for row_num, (name, path, ext) in enumerate(videos):
+            self.video_table.insertRow(row_num)
+            self.video_table.setItem(row_num, 0, QTableWidgetItem(name))
+            self.video_table.setItem(row_num, 1, QTableWidgetItem(path))
+            self.video_table.setItem(row_num, 2, QTableWidgetItem(ext))

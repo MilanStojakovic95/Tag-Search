@@ -33,3 +33,11 @@ def insert_video(path):
     except Exception as e:
         print(f"DB insert error: {e}")
     conn.close()
+
+def get_all_videos():
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT name, path, extension FROM videos ORDER BY name")
+    results = c.fetchall()
+    conn.close()
+    return results
