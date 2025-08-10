@@ -2,15 +2,17 @@ from PyQt6.QtWidgets import (
     QMainWindow, QVBoxLayout, QWidget,
     QPushButton, QFileDialog, QTableWidget, QTableWidgetItem, QHeaderView
 )
-from utils.file_utils import scan_videos
+from PyQt6.QtGui import QIcon, QPixmap
+from utils.file_utils import scan_videos, generate_thumbnail
 from core.database import insert_video, get_all_videos
+import os
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Video Library Manager")
-        self.resize(900, 600)
+        self.resize(1000, 600)
 
         layout = QVBoxLayout()
 
@@ -19,11 +21,12 @@ class MainWindow(QMainWindow):
         self.scan_button.clicked.connect(self.open_folder_dialog)
         layout.addWidget(self.scan_button)
 
-        # Table for videos
+        # Table for videos (now with 4 columns: Thumbnail, Name, Path, Extension)
         self.video_table = QTableWidget()
-        self.video_table.setColumnCount(3)
-        self.video_table.setHorizontalHeaderLabels(["Name", "Path", "Extension"])
+        self.video_table.setColumnCount(4)
+        self.video_table.setHorizontalHeaderLabels(["Thumbnail", "Name", "Path", "Extension"])
         self.video_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.video_table.setIconSize(QPixmap(120, 80).size())
         self.video_table.setSortingEnabled(True)
         layout.addWidget(self.video_table)
 
@@ -47,6 +50,20 @@ class MainWindow(QMainWindow):
         videos = get_all_videos()
         for row_num, (name, path, ext) in enumerate(videos):
             self.video_table.insertRow(row_num)
-            self.video_table.setItem(row_num, 0, QTableWidgetItem(name))
-            self.video_table.setItem(row_num, 1, QTableWidgetItem(path))
-            self.video_table.setItem(row_num, 2, QTableWidgetItem(ext))
+
+            # Thumbnail
+            thumb_path = generate_thumbnail(path)
+            if thumb_path and os.path.exists(thumb_path):
+                icon = QIcon(thumb_path)
+            else:
+                icon = QIcon()  # Empty if no thumbnail
+            thumb_item = QTableWidgetItem()
+            thumb_item.setIcon(icon)
+            self.video_table.setItem(row_num, 0, thumb_item)
+
+            # Name
+            self.video_table.setItem(row_num, 1, QTableWidgetItem(name))
+            # Path
+            self.video_table.setItem(row_num, 2, QTableWidgetItem(path))
+            # Extension
+            self.video_table.setItem(row_num, 3, QTableWidgetItem(ext))
