@@ -1,0 +1,23 @@
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# SQLite database and journal files (runtime data)
+data/library.db
+data/library.db-journal
+
+# Thumbnails cache (can get large)
+data/thumbnails/
+
+# App settings (user-specific)
+data/settings.json
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Virtual environment folder (if used)
+venv/
+env/
